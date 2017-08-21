@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% load tags %}
+
+{% block content %}
+    <div class="pure-control-group">
+        <label>Filter: </label>
+        <input id="filter" type="text" class="pure-input pure-u-1-4">
+        <button class="pure-button" onclick="clear_filter();"><i class="fa fa-remove"></i></button>
+    </div>
+    <table class="pure-table product_list">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>WW</th>
+            <th>WBT</th>
+            <th>Kcal</th>
+            <th>Unit weight</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for product in object_list %}
+            <tr class="product-{{ product.id }} {% if not forloop.counter|odd %}pure-table-odd{% endif %}">
+                <td><a onclick="pop_up_update_modal('{{ product.id }}');" style="cursor: pointer;">{{ forloop.counter }}</a></td>
+                <td class="product-name">{{ product.name }}</td>
+                <td class="product-ww">{{ product.ww }}</td>
+                <td class="product-wbt">{{ product.wbt }}</td>
+                <td class="product-cal">{{ product.cal }}</td>
+                <td class="product-unit_weight">{{ product.unit_weight }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $('#filter').on('change keyup', function () {
+            var phrase = $(this).val().toLowerCase();
+            $('table.product_list tbody tr').each(function (index) {
+                var name = $(this).find('td.product-name').text().toLowerCase();
+                if(name.match(phrase)) {
+                    $(this).fadeIn();
+                } else {
+                    $(this).fadeOut();
+                }
+            });
+        });
+
+        function clear_filter() {
+            $('#filter').val('').trigger('change');
+        }
+    </script>
+{% endblock content %}

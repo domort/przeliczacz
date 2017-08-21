@@ -1,0 +1,19 @@
+<form class="pure-form pure-form-aligned">
+    {% csrf_token %}
+    <fieldset>
+        {% for field in form %}
+            <div class="pure-control-group">
+                <label class="pure-u-1-3 form-label {% if field.errors %}redtext{% endif %}">{{ field.label }} </label>
+                {{ field }}
+            </div>
+            {% if field.errors %}
+                <div class="pure-control-group">
+                    <div class="pure-u-1-3 form-label redtext">{{ field.errors|striptags }}</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+<input type="submit" hidden class="hidden-submit-btn">
+<input type="hidden" name="action" value="{{ action }}">
+<input type="hidden" name="href" value="">
+</form>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+{% load staticfiles %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Przeliczacz">
+
+    <title>Przeliczacz{% if title %}: {{ title }}{% endif %}</title>
+
+    <link rel="shortcut icon" href="{% static 'image/munik-head.ico' %}"/>
+    <link rel="stylesheet" href="{% static 'css/pure-min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/email.css' %}">
+    <link rel="stylesheet" href="{% static 'jquery-ui-1.11.4/jquery-ui.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ball-atom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/growl.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+
+    <script src="{% static 'js/jquery-1.7.1.min.js' %}"></script>
+    <script src="{% static 'jquery-ui-1.11.4/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'js/growl.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+</head>
+<body>
+
+<div id="layout" class="content pure-g">
+    <div id="nav" class="pure-u">
+        {% if user.is_authenticated %}
+            <a href="{% url 'home' %}"><img id="munik-logo" src="{% static 'image/munik-head.ico' %}"
+                                            alt="Muńkowy"/></a>
+            <a href="#" class="nav-menu-button">Menu</a>
+
+            <div class="nav-inner">
+                <div class="pure-menu">
+                    <ul class="pure-menu-list">
+                        <li class="pure-menu-heading">MENU</li>
+                        <li class="pure-menu-item"><a href="{% url 'home' %}" class="pure-menu-link"><span
+                                class="email-label-personal"></span>Home</a></li>
+                        <li class="pure-menu-item"><a href="{% url 'product_list' %}" class="pure-menu-link"><span
+                                class="email-label-work"></span>Product List</a></li>
+                        <li class="pure-menu-item"><a href="#" onclick="pop_up_update_modal(null);" class="pure-menu-link"><span
+                                class="email-label-travel"></span>Add Product</a></li>
+                        <li class="pure-menu-heading"></li>
+                        <li class="pure-menu-item"><a href="{% url 'logout' %}" class="pure-menu-link"><span
+                                class="email-label-danger"></span>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="main" class="pure-u-1">
+        <div class="email-content">
+            <div class="email-content-header pure-g">
+                <div class="pure-u-1">
+                    <h1 class="email-content-title">Przeliczacz</h1>
+
+                    <div class="email-content-subtitle">
+                        {% if title != 'Home' %}
+                            {{ title }}
+                        {% else %}
+                            <div class="pure-control-group" id="poda" style="display:none;">
+                                Poda <b><span id="result_sum">0</span></b> w tym <b><span id="result_ww">0</span></b>.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="email-content-body">
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="fade-me page-fade" style="display: none;">
+    <div class="la-ball-atom la-2x">
+        <div>
+        </div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+<a hidden href="#product-update-modal"></a>
+<section class="modal--show" id="product-update-modal" tabindex="-1"
+         role="dialog" aria-labelledby="modal-label" aria-hidden="true">
+
+    <div class="modal-inner">
+        <header id="modal-label">
+            <div class="pure-u-1-4"></div>
+            <div class="pure-u-3-4"><h2>Update Product</h2></div>
+        </header>
+        <div class="modal-content"></div>
+        <footer>
+            <div class="pure-u-1-6">
+                <a href="#!" class="close-action pure-button button-secondary" title="Close this modal"
+                   data-dismiss="modal">Cancel</a>
+            </div>
+            <div class="pure-u-1-6"></div>
+            <div class="pure-u-1-6">
+                <button class="pure-button pure-button-primary confirm-btn">Update</button>
+            </div>
+            <div class="pure-u-1-6"></div>
+            <div class="pure-u-1-6 delete-btn-cover">
+                <button class="pure-button button-warning delete-btn">Delete this product</button>
+            </div>
+        </footer>
+    </div>
+
+    <a href="#!" class="modal-close" title="Close this modal" data-close="Close"
+       data-dismiss="modal">?</a>
+</section>
+
+<a hidden href="#product-delete-modal"></a>
+<section class="modal--show" id="product-delete-modal" tabindex="-1"
+         role="dialog" aria-labelledby="modal-label-delete" aria-hidden="true">
+
+    <div class="modal-inner">
+        <header id="modal-label-delete">
+            <div class="pure-u-1-4"></div>
+            <div class="pure-u-3-4"><h2>Product Delete</h2></div>
+        </header>
+        <div class="modal-content">You are about to delete <b><i><span class="product-name"></span></i></b></div>
+        <footer>
+            <div class="pure-u-1-4"></div>
+            <div class="pure-u-3-4">
+                <a href="#!" class="close-action pure-button pure-button-secondary" title="Close this modal"
+                   data-dismiss="modal">Cancel</a>
+                <button class="pure-button pure-button-primary confirm-btn">Confirm</button>
+            </div>
+        </footer>
+    </div>
+
+    <a href="#!" class="modal-close" title="Close this modal" data-close="Close"
+       data-dismiss="modal">?</a>
+</section>
+
+<script>
+    $(document).ready(function () {
+        $('a.nav-menu-button').on('click', function (e) {
+            $('#nav').toggleClass('active');
+        });
+
+        {% for message in messages %}
+            var type = "{{ message.tags }}";
+            {% if message.tags == 'success' %}
+                type = "notice";
+            {% endif %}
+            var msg = "{{ message }}";
+            switch (type) {
+                case 'error':
+                    $.growl.error({message: msg});
+                    break;
+                case 'notice':
+                    $.growl.notice({message: msg});
+                    break;
+                case 'warning':
+                    $.growl.warning({message: msg});
+                    break;
+            }
+        {% endfor %}
+    });
+
+    $(window).load(function() {
+        var active_modal = $('section.modal--show.is-active');
+        if(active_modal.length) {
+            active_modal.find('a.modal-close')[0].click();
+        }
+    })
+</script>
+
+<script>
+    function pop_up_update_modal(id) {
+        fade();
+        var url = null;
+        if (id) {
+            url = '{% url 'product_update' "123" %}'.replace(/123/g, id);
+        } else {
+            url = '{% url 'product_add' %}';
+        }
+        $.ajax({
+            url: url,
+            type: "GET",
+            success: function (data) {
+                var modal = $('#product-update-modal');
+                modal.find('div.modal-content').html(data);
+                modal.find('button.confirm-btn').attr('onclick', 'update_product("' + url + '");');
+                var action = modal.find('div.modal-content').find('input[name="action"]').val();
+                modal.find('header#modal-label').find('h2').text('Product ' + action);
+                modal.find('button.confirm-btn').text(action);
+                if (action != 'Update') {
+                    modal.find('div.delete-btn-cover').hide();
+                    modal.find('button.delete-btn').attr('onclick', '');
+                } else {
+                    modal.find('div.delete-btn-cover').show();
+                    var name = modal.find('div.modal-content').find('input[name="name"]').val();
+                    modal.find('button.delete-btn').attr('onclick', 'pop_up_delete_product_modal(\'#product-update-modal\', ' + id + ', \'' + name + '\');');
+                }
+                $('a[href="#product-update-modal"]')[0].click();
+                unfade();
+            },
+            error: function (data) {
+                unfade();
+                $.growl.error({message: data.statusText});
+            }
+        });
+    }
+
+    function update_product(url) {
+        var modal = $('#product-update-modal');
+        var form = modal.find('form');
+        form.find('input[name="href"]').val(window.location.pathname);
+        var serialized = modal.find('form').serialize();
+        if (!form[0].checkValidity()) {
+            form.find('input.hidden-submit-btn').click();
+        } else {
+            fade();
+            $.ajax({
+                url: url,
+                data: serialized,
+                type: "POST",
+                success: function (data) {
+                    if(data.refresh) {
+                        location.reload();
+                        $.growl.notice({message: 'Product has been created'});
+                    } else {
+                        var product_id = data.id;
+                        var row = $('tr.product-' + product_id);
+                        if (row) {
+                            row.hide();
+                            for (var key in data) {
+                                var td = row.find('td.product-' + key);
+                                if (td) {
+                                    td.text(data[key]);
+                                }
+                            }
+                            row.attr('data-ww', data['ww']);
+                            row.attr('data-wbt', data['wbt']);
+                            modal.find('a.modal-close')[0].click();
+                            unfade();
+                            $.growl.notice({message: 'Product has been updated'});
+                            $('#ratio').trigger('change');
+                            row.fadeIn('slow');
+                        } else {
+                            $.growl.warning({message: "Product has been updated. Please reload the page in order to see the changes."});
+                        }
+                    }
+                },
+                error: function (data) {
+                    unfade();
+                    if (data.status == 400) {
+                        modal.find('div.modal-content').html(data.responseText);
+                        $.growl.error({message: "Your form contains errors"});
+                    } else {
+                        $.growl.error({message: "Unexpected error. Please try again."});
+                    }
+                }
+            });
+        }
+    }
+
+    function pop_up_delete_product_modal(modal, id, name) {
+        var popup = $('#product-delete-modal');
+        popup.find('span.product-name').text(name);
+        popup.find('button.confirm-btn').attr('onclick', 'delete_product(' + id + ');');
+        $('a[href="#product-delete-modal"]')[0].click();
+{#        caller.find('a.modal-close')[0].click();#}
+{#        popup.find('a.modal-close')[0].click();#}
+    }
+
+    function delete_product(id) {
+        fade();
+        $.ajax({
+            url: '{% url 'product_delete' '123' %}'.replace(/123/g, id),
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                'href': window.location.pathname
+            },
+            type: "POST",
+            success: function (data) {
+                location.reload();
+                $.growl.notice({message: "Product has been deleted"});
+            },
+            error: function () {
+                unfade();
+                $.growl.error({message: "Unexpected error. Please try again."});
+            }
+        });
+    }
+</script>
+</body>
+</html>
