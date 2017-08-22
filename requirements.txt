@@ -1,8 +1,9 @@
-dj-database-url==0.3.0
 Django==1.7.1
+dj-database-url==0.4.1
+gunicorn==19.6.0
 django-extensions==1.5.0
 django-postgrespool==0.3.0
 psycopg2==2.7.3
 six==1.10.0
 SQLAlchemy==1.1.13
-whitenoise==2.0.2
+whitenoise==2.0.6
