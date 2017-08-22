@@ -49,6 +49,7 @@ def get_products(request):
             product_json['unit_weight'] = float(product.unit_weight or 0)
             product_json['ww'] = float(product.ww)
             product_json['wbt'] = float(product.wbt)
+            product_json['carbo'] = float(product.carbo)
             results.append(product_json)
         data = json.dumps(results)
     else:

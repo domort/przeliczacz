@@ -2,12 +2,14 @@
 
 {% block content %}
 
+
     <form class="pure-form pure-form-aligned">
         <fieldset>
             <div class="pure-control-group">
                 <label class="pure-u-1-3 form-label">Ratio: </label>
                 <input style="width:75px !important; display: inline-block !important;" id="ratio" type="number"
-                       step="0.1" min="0.1" max="4.9" class="pure-input pure-u-1-8" onchange="calculate_insulin();" onblur=" $('#autocomplete_spinner').hide();">
+                       step="0.1" min="0.1" max="4.9" class="pure-input pure-u-1-8" onchange="calculate_insulin();"
+                       onblur=" $('#autocomplete_spinner').hide();">
                 <label class="pure-u-23-24" style="width:30px;">
                     <div class="la-ball-atom la-dark" id="autocomplete_spinner"
                          style="display: none;">
@@ -29,14 +31,15 @@
         <p id="empty-meal-msg"><b>Your meal is empty.</b></p>
         <table class="pure-table meal" style="display: none;">
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Unit weight</th>
-                    <th>Amount</th>
-                    <th>g</th>
-                    <th></th>
-                </tr>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Unit weight</th>
+                <th>Amount</th>
+                <th>g</th>
+                <th>Carbs</th>
+                <th></th>
+            </tr>
             </thead>
             <tbody>
             </tbody>
@@ -51,11 +54,11 @@
                 delay: 0,
                 autoFocus: true,
                 select: function (event, ui) {
-                    add_dish(ui.item.id, ui.item.name, ui.item.unit_weight, ui.item.ww, ui.item.wbt);
+                    add_dish(ui.item.id, ui.item.name, ui.item.unit_weight, ui.item.ww, ui.item.wbt, null, null, ui.item.carbo);
                     event.preventDefault();
                 },
                 search: function () {
-                    if($('#products').is(":focus")) {
+                    if ($('#products').is(":focus")) {
                         $('#autocomplete_spinner').fadeIn();
                     } else {
                         $('#autocomplete_spinner').hide();
@@ -76,13 +79,13 @@
             });
         });
 
-        function add_dish(id, name, unit_weight, ww, wbt, amount, in_grams) {
+        function add_dish(id, name, unit_weight, ww, wbt, amount, in_grams, carbo) {
             var grams_checked = '';
-            if(in_grams == 'True') {
+            if (in_grams == 'True') {
                 grams_checked = 'checked';
             }
             var amount_val = 1;
-            if(amount) {
+            if (amount) {
                 amount_val = amount;
             }
             $('#poda').hide();
@@ -93,7 +96,7 @@
             }
             no += 1;
             var grams_disabled = '';
-            if(unit_weight == 0) {
+            if (unit_weight == 0) {
                 grams_disabled = 'disabled';
             }
             meal_row += '<td><a onclick="pop_up_update_modal(' + id + ');" style="cursor: pointer;">' + no + '</a></td>';
@@ -101,6 +104,7 @@
             meal_row += '<td class="product-unit_weight">' + unit_weight + '</td>';
             meal_row += '<td class="product-amount"><input class="amount" style="width:75px;" type="number" min="0" step="1" value="' + amount_val + '" onchange="calculate_insulin();"></td>';
             meal_row += '<td class="product-in_grams"><input ' + grams_disabled + ' type="checkbox" class="gram_check" onchange="calculate_insulin();" ' + grams_checked + '></td>';
+            meal_row += '<td class="product-carbo">' + '-' + '</td>';
             meal_row += '<td>' + '<button class="pure-button" onclick="remove_row($(this));"><i class="fa fa-remove"></i></button>' + '</td>';
             meal_row += '</tr>';
             $('table.meal tbody').append(meal_row);
@@ -109,12 +113,12 @@
             $('#empty-meal-msg').hide();
             $('table.meal').show();
             $("html, body").animate({scrollTop: 0}, {
-                        complete: function () {
-                            $('#poda').fadeIn();
-                        }
+                    complete: function () {
+                        $('#poda').fadeIn();
                     }
+                }
             );
-            if(amount && in_grams) {
+            if (amount && in_grams) {
                 return;
             }
             update_meal();
@@ -124,7 +128,7 @@
             $(button).closest('tr').remove();
             reassign_row_numbers();
             calculate_insulin();
-            if(!$('table.meal tbody tr').length) {
+            if (!$('table.meal tbody tr').length) {
                 $('table.meal').hide();
                 $('#poda').hide();
                 $('#empty-meal-msg').fadeIn();
@@ -141,35 +145,45 @@
         function calculate_insulin() {
             var total_ww = 0;
             var total_wbt = 0;
-            $('table.meal tbody tr').each(function (index) {
+            var total_carbs = 0;
+
+            $('table.meal tbody tr').each(function (index, row) {
                 var row_ww = $(this).attr('data-ww');
                 var row_wbt = $(this).attr('data-wbt');
                 var amount = $(this).find('input.amount').val();
                 var unit_weight = $(this).find('td.product-unit_weight').text();
                 var gram_check = $(this).find('input.gram_check').is(':checked');
                 var row_ratio = amount;
-                if(gram_check) {
-                    row_ratio = amount/unit_weight;
+                if (gram_check) {
+                    row_ratio = amount / unit_weight;
                 }
                 total_ww += row_ratio * row_ww;
                 total_wbt += row_ratio * row_wbt;
+                var row_carbs = row_ratio * row_ww * 10.0;
+                total_carbs += row_carbs;
+                row_carbs = Math.round(row_carbs * Math.pow(10, 1)) / Math.pow(10, 1);
+                $(row).find('td.product-carbo').text(row_carbs);
             });
             var ratio = $('#ratio').val();
-            if(!ratio) {
+            if (!ratio) {
                 ratio = 1;
             }
             total_ww *= ratio;
             total_wbt *= ratio;
             var total_ww_wbt = total_ww + total_wbt;
-            total_ww_wbt = Math.round(total_ww_wbt * Math.pow(10,1))/Math.pow(10,1);
-            total_ww = Math.round(total_ww * Math.pow(10,1))/Math.pow(10,1);
+            total_ww_wbt = Math.round(total_ww_wbt * Math.pow(10, 1)) / Math.pow(10, 1);
+            total_ww = Math.round(total_ww * Math.pow(10, 1)) / Math.pow(10, 1);
+            total_wbt = Math.round(total_wbt * Math.pow(10, 1)) / Math.pow(10, 1);
+            total_carbs = Math.round(total_carbs * Math.pow(10, 1)) / Math.pow(10, 1);
             $('#result_sum').text(total_ww_wbt);
             $('#result_ww').text(total_ww);
+            $('#result_wbt').text(total_wbt);
+            $('#result_carbo').text(total_carbs + ' g');
         }
 
         function update_meal() {
             var meal_elements = [];
-            $('table.meal tbody tr').each(function(id, row) {
+            $('table.meal tbody tr').each(function (id, row) {
                 row = $(row);
                 var element = {};
                 element['id'] = row.attr('data-id');
@@ -187,7 +201,7 @@
                 },
                 type: "POST",
                 error: function (data) {
-                    if(data.status == 400) {
+                    if (data.status == 400) {
                         var err = $.parseJSON(data.responseText);
                         $.growl.error({message: 'Encountered when saving your meal: ' + err.error + ' Please contact developer.'});
                     } else {
@@ -197,10 +211,11 @@
             });
         }
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             {% if meal %}
                 {% for meal_el in meal.meal_elements.all %}
-                    add_dish('{{ meal_el.product_id }}', '{{ meal_el.product.name }}', {{ meal_el.product.unit_weight }}.toString(), '{{ meal_el.product.ww }}', '{{ meal_el.product.wbt }}', {{ meal_el.amount }}.toString(), '{{ meal_el.in_grams }}');
+                    add_dish('{{ meal_el.product_id }}', '{{ meal_el.product.name }}', {{ meal_el.product.unit_weight }}.toString(), '{{ meal_el.product.ww }}', '{{ meal_el.product.wbt }}',
+                    {{ meal_el.amount }}.toString(), '{{ meal_el.in_grams }}', '{{ meal_el.product.carbo }}');
                 {% endfor %}
                 $('#ratio').val({{ meal.ratio }}.toString());
             {% endif %}

@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'przeliczacz.wsgi.application'
 DATABASES = {}
 db_from_env = dj_database_url.config()
 DATABASES['default'] = db_from_env
-print DATABASES['default']
+
 # Enable Connection Pooling
 DATABASES['default']['ENGINE'] = 'django_postgrespool'
 
